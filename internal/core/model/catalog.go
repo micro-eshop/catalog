@@ -20,3 +20,13 @@ func ValidateProductId(id ProductId) error {
 	}
 	return errors.New("ProductId must be greater than 0")
 }
+
+func ValidateProductIds(ids []ProductId) error {
+	for id := range ids {
+		err := ValidateProductId(ProductId(id))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

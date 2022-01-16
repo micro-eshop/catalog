@@ -9,6 +9,7 @@ import (
 
 type CatalogService interface {
 	GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error)
+	GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error)
 }
 
 type catalogService struct {
@@ -27,4 +28,12 @@ func (s *catalogService) GetProductById(ctx context.Context, id model.ProductId)
 		return nil, err
 	}
 	return s.repo.GetProductById(ctx, id)
+}
+
+func (s *catalogService) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
+	err := model.ValidateProductIds(ids)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.GetProductByIds(ctx, ids)
 }

@@ -8,4 +8,5 @@ import (
 
 type CatalogRepository interface {
 	GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error)
+	GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error)
 }
