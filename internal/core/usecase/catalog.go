@@ -34,3 +34,18 @@ func NewGetProductByIdsUseCase(service services.CatalogService) *getProductByIds
 func (uc *getProductByIdsUseCase) Execute(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
 	return uc.service.GetProductByIds(ctx, ids)
 }
+
+type importProductsUseCase struct {
+	service services.CatalogImportService
+}
+
+func NewImportProductsUseCase(service services.CatalogImportService) *importProductsUseCase {
+	return &importProductsUseCase{
+		service: service,
+	}
+}
+
+func (uc *importProductsUseCase) Execute(ctx context.Context) error {
+	data := make([]*model.Product, 0)
+	return uc.service.Store(ctx, data)
+}

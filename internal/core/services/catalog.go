@@ -37,3 +37,21 @@ func (s *catalogService) GetProductByIds(ctx context.Context, ids []model.Produc
 	}
 	return s.repo.GetProductByIds(ctx, ids)
 }
+
+type CatalogImportService interface {
+	Store(ctx context.Context, products []*model.Product) error
+}
+
+type catalogImportService struct {
+	repo repositories.CatalogRepository
+}
+
+func NewCatalogImportService(repo repositories.CatalogRepository) CatalogService {
+	return &catalogService{
+		repo: repo,
+	}
+}
+
+func (s *catalogImportService) Store(ctx context.Context, products []*model.Product) error {
+	return nil
+}
