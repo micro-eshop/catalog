@@ -37,15 +37,20 @@ func (uc *getProductByIdsUseCase) Execute(ctx context.Context, ids []model.Produ
 
 type importProductsUseCase struct {
 	service services.CatalogImportService
+	source  services.ProductsSourceDataProvider
 }
 
-func NewImportProductsUseCase(service services.CatalogImportService) *importProductsUseCase {
+func NewImportProductsUseCase(service services.CatalogImportService, source services.ProductsSourceDataProvider) *importProductsUseCase {
 	return &importProductsUseCase{
 		service: service,
+		source:  source,
 	}
 }
 
 func (uc *importProductsUseCase) Execute(ctx context.Context) error {
-	data := make([]*model.Product, 0)
+	data, err := uc.source.Provide(ctx)
+	if err != nil {
+		return err
+	}
 	return uc.service.Store(ctx, data)
 }

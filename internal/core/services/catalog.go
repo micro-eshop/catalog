@@ -16,7 +16,7 @@ type catalogService struct {
 	repo repositories.CatalogRepository
 }
 
-func NewCatalogService(repo repositories.CatalogRepository) CatalogService {
+func NewCatalogService(repo repositories.CatalogRepository) *catalogService {
 	return &catalogService{
 		repo: repo,
 	}
@@ -46,12 +46,27 @@ type catalogImportService struct {
 	repo repositories.CatalogRepository
 }
 
-func NewCatalogImportService(repo repositories.CatalogRepository) CatalogService {
-	return &catalogService{
+func NewCatalogImportService(repo repositories.CatalogRepository) *catalogImportService {
+	return &catalogImportService{
 		repo: repo,
 	}
 }
 
 func (s *catalogImportService) Store(ctx context.Context, products []*model.Product) error {
+	return nil
+}
+
+type ProductsSourceDataProvider interface {
+	Provide(ctx context.Context) ([]*model.Product, error)
+}
+
+type productsSourceDataProvider struct {
+}
+
+func NewProductsSourceDataProvider(repo repositories.CatalogRepository) *productsSourceDataProvider {
+	return &productsSourceDataProvider{}
+}
+
+func (s *productsSourceDataProvider) Store(ctx context.Context, products []*model.Product) error {
 	return nil
 }
