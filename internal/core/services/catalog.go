@@ -67,6 +67,6 @@ func NewProductsSourceDataProvider(repo repositories.CatalogRepository) *product
 	return &productsSourceDataProvider{}
 }
 
-func (s *productsSourceDataProvider) Store(ctx context.Context, products []*model.Product) error {
-	return nil
+func (s *productsSourceDataProvider) Provide(ctx context.Context) ([]*model.Product, error) {
+	return make([]*model.Product, 0), nil
 }
