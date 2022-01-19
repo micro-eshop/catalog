@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/micro-eshop/catalog/internal/core/model"
 	"github.com/micro-eshop/catalog/internal/core/services"
 )
@@ -36,8 +37,9 @@ func (uc *getProductByIdsUseCase) Execute(ctx context.Context, ids []model.Produ
 }
 
 type importProductsUseCase struct {
-	service services.CatalogImportService
-	source  services.ProductsSourceDataProvider
+	service   services.CatalogImportService
+	source    services.ProductsSourceDataProvider
+	publisher services.ProductCreatedPublisher
 }
 
 func NewImportProductsUseCase(service services.CatalogImportService, source services.ProductsSourceDataProvider) *importProductsUseCase {
@@ -52,5 +54,15 @@ func (uc *importProductsUseCase) Execute(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return uc.service.Store(ctx, data)
+	err = uc.service.Store(ctx, data)
+	if err != nil {
+		return err
+	}
+	for _, product := range data {
+		publishErr := uc.publisher.Publish(ctx, services.NewProductCreated(product))
+		if publishErr != nil {
+			err = multierror.Append(err, publishErr)
+		}
+	}
+	return err
 }
