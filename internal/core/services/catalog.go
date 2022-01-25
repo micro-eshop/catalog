@@ -53,6 +53,16 @@ func NewCatalogImportService(repo repositories.CatalogRepository) *catalogImport
 }
 
 func (s *catalogImportService) Store(ctx context.Context, products []*model.Product) error {
+	for _, product := range products {
+		err := model.ValidateProduct(product)
+		if err != nil {
+			return err
+		}
+		err = s.repo.Insert(ctx, product)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

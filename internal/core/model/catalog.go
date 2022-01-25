@@ -19,6 +19,10 @@ func NewProduct(id ProductId, name, brand, description string, price float64, pr
 	return &Product{ID: id, Name: name, Brand: brand, Description: description, Price: price, PromotionPrice: promotionPrice}
 }
 
+func ValidateProduct(product *Product) error {
+	return ValidateProductId(product.ID)
+}
+
 func ValidateProductId(id ProductId) error {
 	if id > 0 {
 		return nil

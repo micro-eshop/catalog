@@ -25,7 +25,7 @@ func newMongoProduct(product *model.Product) *mongoProduct {
 	return &mongoProduct{ProductID: int(product.ID), Name: product.Name, Brand: product.Brand, Description: product.Description, Price: product.Price, PromotionPrice: product.PromotionPrice}
 }
 
-func ToInsertMongoDocument(product *mongoProduct) bson.M {
+func toInsertMongoDocument(product *mongoProduct) bson.M {
 	p := bson.M{
 		"_id":            product.ProductID,
 		"name":           product.Name,
@@ -101,4 +101,13 @@ func (r *mongoCatalogRepository) GetProductByIds(ctx context.Context, ids []mode
 
 	}
 	return results, nil
+}
+
+func (r *mongoCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
+	col := r.db.Collection(productsCollectionName)
+	opt := options.Update().SetUpsert(true)
+	dbProduct := newMongoProduct(product)
+	filter := bson.M{"_id": product.ID}
+	_, err := col.UpdateOne(ctx, filter, toInsertMongoDocument(dbProduct), opt)
+	return err
 }
