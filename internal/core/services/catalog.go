@@ -13,10 +13,10 @@ type CatalogService interface {
 }
 
 type catalogService struct {
-	repo repositories.CatalogRepository
+	repo repositories.CatalogReader
 }
 
-func NewCatalogService(repo repositories.CatalogRepository) *catalogService {
+func NewCatalogService(repo repositories.CatalogReader) *catalogService {
 	return &catalogService{
 		repo: repo,
 	}
@@ -43,7 +43,7 @@ type CatalogImportService interface {
 }
 
 type catalogImportService struct {
-	repo repositories.CatalogRepository
+	repo repositories.CatalogWriter
 }
 
 func NewCatalogImportService(repo repositories.CatalogRepository) *catalogImportService {
