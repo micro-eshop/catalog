@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/micro-eshop/catalog/internal/core/model"
+	"github.com/micro-eshop/catalog/internal/core/repositories"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -83,6 +84,41 @@ func (r *mongoCatalogRepository) GetProductById(ctx context.Context, id model.Pr
 func (r *mongoCatalogRepository) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
 	col := r.db.Collection(productsCollectionName, &options.CollectionOptions{})
 	filter := bson.M{"_id": bson.M{"$in": ids}}
+	cur, err := col.Find(ctx, filter)
+	if err == mongo.ErrNoDocuments {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	var results []*model.Product
+	for cur.Next(ctx) {
+		var result mongoProduct
+		err = cur.Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, result.ToProduct())
+
+	}
+	return results, nil
+}
+
+func (r *mongoCatalogRepository) Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
+	col := r.db.Collection(productsCollectionName, &options.CollectionOptions{})
+	filter := bson.M{}
+	if params.Name != "" {
+		filter["name"] = bson.M{"$regex": params.Name}
+	}
+	if params.Brand != "" {
+		filter["brand"] = bson.M{"$regex": params.Brand}
+	}
+	if params.PriceFrom != 0 {
+		filter["price"] = bson.M{"$gte": params.PriceFrom}
+	}
+	if params.PriceTo != 0 {
+		filter["price"] = bson.M{"$lte": params.PriceTo}
+	}
 	cur, err := col.Find(ctx, filter)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil

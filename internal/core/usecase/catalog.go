@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/micro-eshop/catalog/internal/core/model"
+	"github.com/micro-eshop/catalog/internal/core/repositories"
 	"github.com/micro-eshop/catalog/internal/core/services"
 )
 
@@ -33,4 +34,18 @@ func NewGetProductByIdsUseCase(service services.CatalogService) *getProductByIds
 
 func (uc *getProductByIdsUseCase) Execute(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
 	return uc.service.GetProductByIds(ctx, ids)
+}
+
+type searchProductsUseCase struct {
+	service services.CatalogService
+}
+
+func NewSearchProductsUseCase(service services.CatalogService) *getProductByIdsUseCase {
+	return &getProductByIdsUseCase{
+		service: service,
+	}
+}
+
+func (uc *searchProductsUseCase) Execute(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
+	return uc.service.Search(ctx, params)
 }

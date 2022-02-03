@@ -10,6 +10,7 @@ import (
 type CatalogService interface {
 	GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error)
 	GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error)
+	Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error)
 }
 
 type catalogService struct {
