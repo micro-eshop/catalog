@@ -3,23 +3,31 @@ package usecase
 import (
 	"context"
 
+	"github.com/micro-eshop/catalog/internal/core/dto"
 	"github.com/micro-eshop/catalog/internal/core/model"
 	"github.com/micro-eshop/catalog/internal/core/repositories"
 	"github.com/micro-eshop/catalog/internal/core/services"
 )
 
-type getProductByIdUseCase struct {
+type GetProductByIdUseCase struct {
 	service services.CatalogService
 }
 
-func NewGetProductByIdUseCase(service services.CatalogService) *getProductByIdUseCase {
-	return &getProductByIdUseCase{
+func NewGetProductByIdUseCase(service services.CatalogService) *GetProductByIdUseCase {
+	return &GetProductByIdUseCase{
 		service: service,
 	}
 }
 
-func (uc *getProductByIdUseCase) Execute(ctx context.Context, id model.ProductId) (*model.Product, error) {
-	return uc.service.GetProductById(ctx, id)
+func (uc *GetProductByIdUseCase) Execute(ctx context.Context, id model.ProductId) (*dto.ProductDto, error) {
+	product, err := uc.service.GetProductById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if product == nil {
+		return nil, nil
+	}
+	return dto.NewProductDto(product), nil
 }
 
 type getProductByIdsUseCase struct {
