@@ -13,10 +13,11 @@ type importProductsUseCase struct {
 	publisher services.ProductCreatedPublisher
 }
 
-func NewImportProductsUseCase(service services.CatalogImportService, source services.ProductsSourceDataProvider) *importProductsUseCase {
+func NewImportProductsUseCase(service services.CatalogImportService, source services.ProductsSourceDataProvider, publisher services.ProductCreatedPublisher) *importProductsUseCase {
 	return &importProductsUseCase{
-		service: service,
-		source:  source,
+		service:   service,
+		source:    source,
+		publisher: publisher,
 	}
 }
 

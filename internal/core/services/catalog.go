@@ -74,7 +74,7 @@ type ProductsSourceDataProvider interface {
 type productsSourceDataProvider struct {
 }
 
-func NewProductsSourceDataProvider(repo repositories.CatalogRepository) *productsSourceDataProvider {
+func NewProductsSourceDataProvider() *productsSourceDataProvider {
 	return &productsSourceDataProvider{}
 }
 

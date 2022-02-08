@@ -1,4 +1,4 @@
-package mongo
+package repositories
 
 import (
 	"context"
@@ -49,21 +49,13 @@ func (p *mongoProduct) ToProduct() *model.Product {
 	return &model.Product{ID: model.ProductId(p.ProductID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: p.PromotionPrice}
 }
 
-func ToInterfaceSlice(ss []*mongoProduct) []interface{} {
-	iface := make([]interface{}, len(ss))
-	for i := range ss {
-		iface[i] = ss[i]
-	}
-	return iface
-}
-
 type mongoCatalogRepository struct {
-	client *mongo.Client
+	client *MongoClient
 	db     *mongo.Database
 }
 
-func NewMongoCatalogRepository(client *mongo.Client) *mongoCatalogRepository {
-	db := client.Database(catalogDatabase)
+func NewMongoCatalogRepository(client *MongoClient) *mongoCatalogRepository {
+	db := client.mongo.Database(catalogDatabase)
 	return &mongoCatalogRepository{client: client, db: db}
 }
 
