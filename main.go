@@ -1,15 +1,21 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+	"flag"
+	"os"
+
+	"github.com/google/subcommands"
+	"github.com/micro-eshop/catalog/cmd"
 )
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	subcommands.Register(subcommands.HelpCommand(), "")
+	subcommands.Register(subcommands.FlagsCommand(), "")
+	subcommands.Register(subcommands.CommandsCommand(), "")
+	subcommands.Register(&cmd.RunApiCmd{}, "")
+
+	flag.Parse()
+	ctx := context.Background()
+	os.Exit(int(subcommands.Execute(ctx)))
 }
