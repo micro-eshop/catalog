@@ -7,12 +7,12 @@ import (
 )
 
 type ProductCreated struct {
-	ID             int
-	Name           string
-	Brand          string
-	Description    string
-	Price          float64
-	PromotionPrice *float64
+	ID             int      `json:"id"`
+	Name           string   `json:"name"`
+	Brand          string   `json:"brand"`
+	Description    string   `json:"description"`
+	Price          float64  `json:"price"`
+	PromotionPrice *float64 `json:"promotion_price,omitempty"`
 }
 
 func NewProductCreated(p *model.Product) *ProductCreated {
