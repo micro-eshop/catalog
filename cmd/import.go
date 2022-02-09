@@ -5,8 +5,10 @@ import (
 	"flag"
 
 	"github.com/google/subcommands"
+	"github.com/micro-eshop/catalog/internal/common/env"
 	"github.com/micro-eshop/catalog/internal/core/services"
 	"github.com/micro-eshop/catalog/internal/core/usecase"
+	"github.com/micro-eshop/catalog/internal/infrastructure/messaging"
 	"github.com/micro-eshop/catalog/internal/infrastructure/repositories"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,8 +34,23 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 		return subcommands.ExitFailure
 	}
 	defer mongodbClient.Close(ctx)
+	publisher, err := messaging.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://localhost:4222"))
+	if err != nil {
+		log.WithError(err).Error("can't create publisher")
+		return subcommands.ExitFailure
+	}
+	defer publisher.Close()
+
 	repo := repositories.NewMongoCatalogRepository(mongodbClient)
 	service := services.NewCatalogImportService(repo)
-	importUc := usecase.NewImportProductsUseCase(service, services.NewProductsSourceDataProvider(), nil)
+
+	importUc := usecase.NewImportProductsUseCase(service, services.NewProductsSourceDataProvider(), publisher)
+
+	err = importUc.Execute(ctx)
+	if err != nil {
+		log.WithError(err).Error("can't import products")
+		return subcommands.ExitFailure
+	}
+
 	return subcommands.ExitSuccess
 }

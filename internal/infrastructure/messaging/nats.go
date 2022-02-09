@@ -14,7 +14,7 @@ type natsClient struct {
 	Connection *nats.Conn
 }
 
-func Connect(url string) (*natsClient, error) {
+func NewPublisher(url string) (*natsClient, error) {
 	nc, err := nats.Connect(url)
 	if err != nil {
 		return nil, err
