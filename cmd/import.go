@@ -14,7 +14,7 @@ import (
 )
 
 type ImportProductsCmd struct {
-	mongoConnection string
+	postgresConn string
 }
 
 func (*ImportProductsCmd) Name() string     { return "run-import" }
@@ -24,24 +24,25 @@ func (*ImportProductsCmd) Usage() string {
 }
 
 func (p *ImportProductsCmd) SetFlags(f *flag.FlagSet) {
-	f.StringVar(&p.mongoConnection, "mongoConnection", "mongodb://localhost:27017", "mongodb connection string")
+	f.StringVar(&p.postgresConn, "postgresConn", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable", "postgresConn connection string")
 }
 
 func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
-	mongodbClient, err := repositories.NewClient(ctx, p.mongoConnection)
+	log.Infoln("Start import products")
+	postgresClient, err := repositories.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {
-		log.WithError(err).Error("can't create mongodb client")
+		log.WithError(err).Error("can't create postgres  client")
 		return subcommands.ExitFailure
 	}
-	defer mongodbClient.Close(ctx)
-	publisher, err := messaging.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://localhost:4222"))
+	defer postgresClient.Close(ctx)
+	publisher, err := messaging.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
 	if err != nil {
 		log.WithError(err).Error("can't create publisher")
 		return subcommands.ExitFailure
 	}
 	defer publisher.Close()
 
-	repo := repositories.NewMongoCatalogRepository(mongodbClient)
+	repo := repositories.NewPostgresCatalogRepository(postgresClient)
 	service := services.NewCatalogImportService(repo)
 
 	importUc := usecase.NewImportProductsUseCase(service, services.NewProductsSourceDataProvider(), publisher)
@@ -51,6 +52,6 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 		log.WithError(err).Error("can't import products")
 		return subcommands.ExitFailure
 	}
-
+	log.Infoln("Finish import products")
 	return subcommands.ExitSuccess
 }

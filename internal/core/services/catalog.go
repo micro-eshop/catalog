@@ -79,5 +79,5 @@ func NewProductsSourceDataProvider() *productsSourceDataProvider {
 }
 
 func (s *productsSourceDataProvider) Provide(ctx context.Context) ([]*model.Product, error) {
-	return make([]*model.Product, 0), nil
+	return []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23, nil)}, nil
 }

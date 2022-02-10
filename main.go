@@ -14,6 +14,7 @@ func main() {
 	subcommands.Register(subcommands.FlagsCommand(), "")
 	subcommands.Register(subcommands.CommandsCommand(), "")
 	subcommands.Register(&cmd.RunApiCmd{}, "")
+	subcommands.Register(&cmd.ImportProductsCmd{}, "")
 
 	flag.Parse()
 	ctx := context.Background()
