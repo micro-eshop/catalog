@@ -8,13 +8,15 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/micro-eshop/catalog/internal/core/model"
 	"github.com/micro-eshop/catalog/internal/core/repositories"
 )
 
 type postgresProduct struct {
-	ProductID      int             `pg:"id,pk"`
+	ProductID      int             `pg:"id"`
 	Name           string          `pg:"name"`
 	Brand          string          `pg:"brand"`
 	Description    string          `pg:"description"`
@@ -48,10 +50,17 @@ type postgresClient struct {
 
 func createSchema(db *sql.DB) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return err
+	}
 	m, err := migrate.NewWithDatabaseInstance(
 		"file:///migrations",
 		"postgres", driver)
-	m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
+	if err != nil {
+		return err
+	}
+
+	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
 
 	return err
 }
