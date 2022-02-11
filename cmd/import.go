@@ -5,9 +5,9 @@ import (
 	"flag"
 
 	"github.com/google/subcommands"
-	"github.com/micro-eshop/catalog/internal/common/env"
 	"github.com/micro-eshop/catalog/internal/core/services"
 	"github.com/micro-eshop/catalog/internal/core/usecase"
+	"github.com/micro-eshop/catalog/internal/env"
 	"github.com/micro-eshop/catalog/internal/infrastructure/messaging"
 	"github.com/micro-eshop/catalog/internal/infrastructure/repositories"
 	log "github.com/sirupsen/logrus"
