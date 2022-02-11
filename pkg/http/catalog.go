@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/micro-eshop/catalog/internal/core/model"
-	"github.com/micro-eshop/catalog/internal/core/usecase"
+	"github.com/micro-eshop/catalog/pkg/core/model"
+	"github.com/micro-eshop/catalog/pkg/core/usecase"
 )
 
 type CatalogHandler struct {

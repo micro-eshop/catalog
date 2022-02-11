@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/micro-eshop/catalog/internal/core/services"
+	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/nats-io/nats.go"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/micro-eshop/catalog/internal/core/services"
+	"github.com/micro-eshop/catalog/pkg/core/services"
 )
 
 type importProductsUseCase struct {

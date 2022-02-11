@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 
-	"github.com/micro-eshop/catalog/internal/core/dto"
-	"github.com/micro-eshop/catalog/internal/core/model"
-	"github.com/micro-eshop/catalog/internal/core/repositories"
-	"github.com/micro-eshop/catalog/internal/core/services"
+	"github.com/micro-eshop/catalog/pkg/core/dto"
+	"github.com/micro-eshop/catalog/pkg/core/model"
+	"github.com/micro-eshop/catalog/pkg/core/repositories"
+	"github.com/micro-eshop/catalog/pkg/core/services"
 )
 
 type GetProductByIdUseCase struct {

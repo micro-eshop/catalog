@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/micro-eshop/catalog/pkg/core/model"
+	"github.com/micro-eshop/catalog/pkg/core/repositories"
 	log "github.com/sirupsen/logrus"
 
 	sq "github.com/Masterminds/squirrel"
@@ -12,8 +14,6 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
-	"github.com/micro-eshop/catalog/internal/core/model"
-	"github.com/micro-eshop/catalog/internal/core/repositories"
 )
 
 type postgresProduct struct {

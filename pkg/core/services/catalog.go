@@ -3,8 +3,8 @@ package services
 import (
 	"context"
 
-	"github.com/micro-eshop/catalog/internal/core/model"
-	"github.com/micro-eshop/catalog/internal/core/repositories"
+	"github.com/micro-eshop/catalog/pkg/core/model"
+	"github.com/micro-eshop/catalog/pkg/core/repositories"
 )
 
 type CatalogService interface {

@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	"github.com/micro-eshop/catalog/internal/core/model"
+	"github.com/micro-eshop/catalog/pkg/core/model"
 )
 
 type ProductSearchParams struct {

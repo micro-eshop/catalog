@@ -1,8 +1,6 @@
 package dto
 
-import (
-	"github.com/micro-eshop/catalog/internal/core/model"
-)
+import "github.com/micro-eshop/catalog/pkg/core/model"
 
 type ProductDto struct {
 	ID             int      `json:"id"`
