@@ -39,6 +39,10 @@ func (s *catalogService) GetProductByIds(ctx context.Context, ids []model.Produc
 	return s.repo.GetProductByIds(ctx, ids)
 }
 
+func (s *catalogService) Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
+	return s.repo.Search(ctx, params)
+}
+
 type CatalogImportService interface {
 	Store(ctx context.Context, products []*model.Product) error
 }

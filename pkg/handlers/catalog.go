@@ -9,16 +9,16 @@ import (
 )
 
 type CatalogHandler struct {
-	GetProductByIdUseCase *usecase.GetProductByIdUseCase
+	getProductByIdUseCase *usecase.GetProductByIdUseCase
 }
 
 func NewCatalogHandler(getProductByIdUseCase *usecase.GetProductByIdUseCase) *CatalogHandler {
 	return &CatalogHandler{
-		GetProductByIdUseCase: getProductByIdUseCase,
+		getProductByIdUseCase: getProductByIdUseCase,
 	}
 }
 
-func (handler *CatalogHandler) GetProductById(c *gin.Context) {
+func (handler *CatalogHandler) getProductById(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(400, gin.H{
@@ -27,7 +27,7 @@ func (handler *CatalogHandler) GetProductById(c *gin.Context) {
 		return
 	}
 	productId := model.ProductId(id)
-	product, err := handler.GetProductByIdUseCase.Execute(c.Request.Context(), productId)
+	product, err := handler.getProductByIdUseCase.Execute(c.Request.Context(), productId)
 	if err != nil {
 		c.AbortWithError(500, err)
 		return
@@ -40,4 +40,8 @@ func (handler *CatalogHandler) GetProductById(c *gin.Context) {
 		return
 	}
 	c.JSON(200, product)
+}
+
+func (h *CatalogHandler) Setup(r gin.IRouter) {
+	r.Group("/catalog").GET("/:id", h.getProductById)
 }
