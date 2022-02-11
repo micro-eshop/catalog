@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/go-pg/pg/v10"
-	"github.com/go-pg/pg/v10/orm"
+	sq "github.com/Masterminds/squirrel"
+	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/lib/pq"
 	"github.com/micro-eshop/catalog/internal/core/model"
 	"github.com/micro-eshop/catalog/internal/core/repositories"
 )
@@ -41,30 +43,25 @@ func (p postgresProduct) toProduct() *model.Product {
 }
 
 type postgresClient struct {
-	db *pg.DB
+	db *sql.DB
 }
 
-func createSchema(db *pg.DB) error {
-	models := []interface{}{
-		(*postgresProduct)(nil),
-	}
+func createSchema(db *sql.DB) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		"file:///migrations",
+		"postgres", driver)
+	m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
 
-	for _, model := range models {
-		err := db.Model(model).CreateTable(&orm.CreateTableOptions{})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return err
 }
 
 func NewPostgresClient(ctx context.Context, connectionString string) (*postgresClient, error) {
-	opt, err := pg.ParseURL(connectionString)
+	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		return nil, err
 	}
-	db := pg.Connect(opt)
-	if err := db.Ping(ctx); err != nil {
+	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 	err = createSchema(db)
@@ -89,14 +86,18 @@ func NewPostgresCatalogRepository(postgresClient *postgresClient) *postgresCatal
 }
 
 func (r *postgresCatalogRepository) GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error) {
-	product := &postgresProduct{ProductID: int(id)}
-	err := r.client.db.Model(product).WherePK().Limit(1).Select()
-
+	sql, _, err := sq.Select("id", "brand", "name", "description", "price", "promotion_price").From("products").Where(sq.Eq{"id": int(id)}).ToSql()
+	if err != nil {
+		return nil, err
+	}
+	var dbProduct postgresProduct
+	row := r.client.db.QueryRowContext(ctx, sql)
+	row.Scan(&dbProduct)
 	if err != nil {
 		return nil, err
 	}
 
-	return product.toProduct(), nil
+	return dbProduct.toProduct(), nil
 }
 
 func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
@@ -109,6 +110,16 @@ func (r *postgresCatalogRepository) Search(ctx context.Context, params repositor
 
 func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
 	dbProduct := newPostgresProduct(product)
-	_, err := r.client.db.Model(dbProduct).OnConflict("(id) DO UPDATE").Insert()
+	query := sq.Insert("products").
+		Columns("id", "brand", "name", "description", "price", "promotion_price").
+		Values(dbProduct.ProductID, dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice)
+
+	sql, _, err := query.ToSql()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.client.db.ExecContext(ctx, sql)
+
 	return err
 }
