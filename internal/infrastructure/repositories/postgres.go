@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
@@ -17,6 +18,10 @@ type postgresProduct struct {
 	Description    string          `pg:"description"`
 	Price          float64         `pg:"price"`
 	PromotionPrice sql.NullFloat64 `pg:"promotion_price"`
+}
+
+func (u postgresProduct) String() string {
+	return fmt.Sprintf("Product<%d, %s, %s, %s, %f, %f)>", u.ProductID, u.Name, u.Brand, u.Description, u.Price, u.PromotionPrice.Float64)
 }
 
 func newPostgresProduct(product *model.Product) *postgresProduct {
@@ -45,7 +50,7 @@ func createSchema(db *pg.DB) error {
 	}
 
 	for _, model := range models {
-		err := db.Model(model).CreateTable(&orm.CreateTableOptions{Temp: true})
+		err := db.Model(model).CreateTable(&orm.CreateTableOptions{})
 		if err != nil {
 			return err
 		}
@@ -103,6 +108,7 @@ func (r *postgresCatalogRepository) Search(ctx context.Context, params repositor
 }
 
 func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
-	_, err := r.client.db.Model(product).OnConflict("(id) DO UPDATE").Insert()
+	dbProduct := newPostgresProduct(product)
+	_, err := r.client.db.Model(dbProduct).OnConflict("(id) DO UPDATE").Insert()
 	return err
 }
