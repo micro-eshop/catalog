@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -53,13 +55,15 @@ func createSchema(db *sql.DB) error {
 		return err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file:///migrations",
+		"file://migrations",
 		"postgresql", driver)
 	if err != nil {
 		return err
 	}
 	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-
+	if err != nil && err.Error() == "no change" {
+		return nil
+	}
 	return err
 }
 
@@ -117,16 +121,14 @@ func (r *postgresCatalogRepository) Search(ctx context.Context, params repositor
 
 func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
 	dbProduct := newPostgresProduct(product)
+	log.Println("Inserting product: ", dbProduct)
 	query := sq.Insert("products").
-		Columns("id", "brand", "name", "description", "price", "promotion_price").
-		Values(dbProduct.ProductID, dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice)
+		Columns("brand", "name", "description", "price", "promotion_price").
+		Values(dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice).
+		RunWith(r.client.db).
+		PlaceholderFormat(sq.Dollar)
 
-	sql, _, err := query.ToSql()
-	if err != nil {
-		return err
-	}
-
-	_, err = r.client.db.ExecContext(ctx, sql)
+	_, err := query.Exec()
 
 	return err
 }
