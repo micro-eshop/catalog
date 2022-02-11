@@ -6,9 +6,8 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/golang-migrate/migrate"
-	"github.com/golang-migrate/migrate/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/micro-eshop/catalog/internal/core/model"
@@ -55,11 +54,10 @@ func createSchema(db *sql.DB) error {
 	}
 	m, err := migrate.NewWithDatabaseInstance(
 		"file:///migrations",
-		"postgres", driver)
+		"postgresql", driver)
 	if err != nil {
 		return err
 	}
-
 	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
 
 	return err
