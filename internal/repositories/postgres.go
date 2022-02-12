@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
+
+var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 type postgresProduct struct {
 	ProductID      int             `pg:"id"`
@@ -43,6 +46,23 @@ func (p postgresProduct) toProduct() *model.Product {
 		price = &p.PromotionPrice.Float64
 	}
 	return &model.Product{ID: model.ProductId(p.ProductID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: price}
+}
+
+func mapProduct(scanner sq.RowScanner) (*postgresProduct, error) {
+	var dbProduct postgresProduct
+	err := scanner.Scan(&dbProduct.ProductID, &dbProduct.Brand, &dbProduct.Name, &dbProduct.Description, &dbProduct.Price, &dbProduct.PromotionPrice)
+	if err != nil {
+		return nil, err
+	}
+	return &dbProduct, nil
+}
+
+func mapIds(ids []model.ProductId) []int {
+	result := make([]int, len(ids))
+	for i, id := range ids {
+		result[i] = int(id)
+	}
+	return result
 }
 
 type postgresClient struct {
@@ -97,22 +117,42 @@ func NewPostgresCatalogRepository(postgresClient *postgresClient) *postgresCatal
 }
 
 func (r *postgresCatalogRepository) GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error) {
-	sql, _, err := sq.Select("id", "brand", "name", "description", "price", "promotion_price").From("products").Where(sq.Eq{"id": int(id)}).ToSql()
-	if err != nil {
-		return nil, err
-	}
-	var dbProduct postgresProduct
-	row := r.client.db.QueryRowContext(ctx, sql)
-	row.Scan(&dbProduct)
-	if err != nil {
-		return nil, err
+	query := psql.Select("id", "brand", "name", "description", "price", "promotion_price").From("products").Where(sq.Eq{"id": int(id)})
+	row := query.RunWith(r.client.db).QueryRowContext(ctx)
+	product, err := mapProduct(row)
+
+	if err == sql.ErrNoRows {
+		return nil, nil
 	}
 
-	return dbProduct.toProduct(), nil
+	if err != nil {
+		return nil, err
+	}
+	return product.toProduct(), nil
 }
 
 func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
-	return nil, nil
+	query := psql.Select("id", "brand", "name", "description", "price", "promotion_price").From("products").Where(sq.Eq{"id": mapIds(ids)})
+	rows, err := query.RunWith(r.client.db).QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	products := make([]*model.Product, 0)
+	for rows.Next() {
+		product, nerr := mapProduct(rows)
+		if nerr != nil {
+			err = multierror.Append(nerr)
+		}
+		products = append(products, product.toProduct())
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 func (r *postgresCatalogRepository) Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
@@ -122,11 +162,10 @@ func (r *postgresCatalogRepository) Search(ctx context.Context, params repositor
 func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
 	dbProduct := newPostgresProduct(product)
 	log.Println("Inserting product: ", dbProduct)
-	query := sq.Insert("products").
+	query := psql.Insert("products").
 		Columns("brand", "name", "description", "price", "promotion_price").
 		Values(dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice).
-		RunWith(r.client.db).
-		PlaceholderFormat(sq.Dollar)
+		RunWith(r.client.db)
 
 	_, err := query.Exec()
 
