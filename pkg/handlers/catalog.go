@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -8,13 +9,24 @@ import (
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
 )
 
-type CatalogHandler struct {
-	getProductByIdUseCase *usecase.GetProductByIdUseCase
+func parseInt(idsStr []string) []model.ProductId {
+	res := make([]model.ProductId, len(idsStr))
+	for i, v := range idsStr {
+		id, _ := strconv.Atoi(v)
+		res[i] = model.ProductId(id)
+	}
+	return res
 }
 
-func NewCatalogHandler(getProductByIdUseCase *usecase.GetProductByIdUseCase) *CatalogHandler {
+type CatalogHandler struct {
+	getProductByIdUseCase  *usecase.GetProductByIdUseCase
+	getProductByIdsUseCase *usecase.GetProductByIdsUseCase
+}
+
+func NewCatalogHandler(getProductByIdUseCase *usecase.GetProductByIdUseCase, getProductByIdsUseCase *usecase.GetProductByIdsUseCase) *CatalogHandler {
 	return &CatalogHandler{
-		getProductByIdUseCase: getProductByIdUseCase,
+		getProductByIdUseCase:  getProductByIdUseCase,
+		getProductByIdsUseCase: getProductByIdsUseCase,
 	}
 }
 
@@ -42,6 +54,32 @@ func (handler *CatalogHandler) getProductById(c *gin.Context) {
 	c.JSON(200, product)
 }
 
+func (handler *CatalogHandler) getProductByIds(c *gin.Context) {
+	idsStr := c.QueryArray("ids")
+
+	if len(idsStr) == 0 {
+		c.Status(204)
+		return
+	}
+
+	ids := parseInt(idsStr)
+
+	result, err := handler.getProductByIdsUseCase.Execute(c.Request.Context(), ids)
+
+	if err != nil {
+		c.Error(err)
+		c.String(http.StatusInternalServerError, "unknown error")
+		return
+	}
+
+	if result == nil {
+		c.Status(404)
+		return
+	}
+
+	c.JSON(200, result)
+}
+
 func (h *CatalogHandler) Setup(r gin.IRouter) {
-	r.Group("/catalog").GET("/:id", h.getProductById)
+	r.Group("/catalog").GET("/products/:id", h.getProductById).GET("/products", h.getProductByIds)
 }

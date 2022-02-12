@@ -31,7 +31,7 @@ func ValidateProductId(id ProductId) error {
 }
 
 func ValidateProductIds(ids []ProductId) error {
-	for id := range ids {
+	for _, id := range ids {
 		err := ValidateProductId(ProductId(id))
 		if err != nil {
 			return err

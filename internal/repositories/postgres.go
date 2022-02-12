@@ -137,9 +137,6 @@ func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []m
 	if err != nil {
 		return nil, err
 	}
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
 	products := make([]*model.Product, 0)
 	for rows.Next() {
 		product, nerr := mapProduct(rows)
@@ -151,6 +148,9 @@ func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []m
 
 	if err != nil {
 		return nil, err
+	}
+	if len(products) == 0 {
+		return nil, nil
 	}
 	return products, nil
 }

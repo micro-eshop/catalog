@@ -51,8 +51,8 @@ func (p *RunApiCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	service := services.NewCatalogService(repo)
 
 	getById := usecase.NewGetProductByIdUseCase(service)
-
-	catalog := handlers.NewCatalogHandler(getById)
+	getByIds := usecase.NewGetProductByIdsUseCase(service)
+	catalog := handlers.NewCatalogHandler(getById, getByIds)
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

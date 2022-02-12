@@ -30,17 +30,17 @@ func (uc *GetProductByIdUseCase) Execute(ctx context.Context, id model.ProductId
 	return dto.NewProductDto(product), nil
 }
 
-type getProductByIdsUseCase struct {
+type GetProductByIdsUseCase struct {
 	service services.CatalogService
 }
 
-func NewGetProductByIdsUseCase(service services.CatalogService) *getProductByIdsUseCase {
-	return &getProductByIdsUseCase{
+func NewGetProductByIdsUseCase(service services.CatalogService) *GetProductByIdsUseCase {
+	return &GetProductByIdsUseCase{
 		service: service,
 	}
 }
 
-func (uc *getProductByIdsUseCase) Execute(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
+func (uc *GetProductByIdsUseCase) Execute(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
 	return uc.service.GetProductByIds(ctx, ids)
 }
 
@@ -48,8 +48,8 @@ type searchProductsUseCase struct {
 	service services.CatalogService
 }
 
-func NewSearchProductsUseCase(service services.CatalogService) *getProductByIdsUseCase {
-	return &getProductByIdsUseCase{
+func NewSearchProductsUseCase(service services.CatalogService) *searchProductsUseCase {
+	return &searchProductsUseCase{
 		service: service,
 	}
 }
