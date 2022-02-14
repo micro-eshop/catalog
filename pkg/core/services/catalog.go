@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"sync"
 
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
+	log "github.com/sirupsen/logrus"
 )
 
 type CatalogService interface {
@@ -44,7 +46,7 @@ func (s *catalogService) Search(ctx context.Context, params repositories.Product
 }
 
 type CatalogImportService interface {
-	Store(ctx context.Context, products []*model.Product) error
+	Store(ctx context.Context, products <-chan *model.Product) <-chan *model.Product
 }
 
 type catalogImportService struct {
@@ -57,22 +59,42 @@ func NewCatalogImportService(repo repositories.CatalogRepository) *catalogImport
 	}
 }
 
-func (s *catalogImportService) Store(ctx context.Context, products []*model.Product) error {
-	for _, product := range products {
-		err := model.ValidateProduct(product)
-		if err != nil {
-			return err
-		}
-		err = s.repo.Insert(ctx, product)
-		if err != nil {
-			return err
-		}
+func (s *catalogImportService) store(ctx context.Context, product *model.Product) error {
+	err := model.ValidateProduct(product)
+	if err != nil {
+		return err
+	}
+	err = s.repo.Insert(ctx, product)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
+func (s *catalogImportService) Store(ctx context.Context, products <-chan *model.Product) <-chan *model.Product {
+	stream := make(chan *model.Product)
+	go func() {
+		var wg sync.WaitGroup
+		for product := range products {
+			wg.Add(1)
+			go func(p *model.Product) {
+				defer wg.Done()
+				err := s.store(ctx, p)
+				if err != nil {
+					log.Errorf("error while storing product: %s", err)
+				} else {
+					stream <- p
+				}
+			}(product)
+		}
+		wg.Wait()
+		close(stream)
+	}()
+	return stream
+}
+
 type ProductsSourceDataProvider interface {
-	Provide(ctx context.Context) ([]*model.Product, error)
+	Provide(ctx context.Context) <-chan *model.Product
 }
 
 type productsSourceDataProvider struct {
@@ -82,6 +104,13 @@ func NewProductsSourceDataProvider() *productsSourceDataProvider {
 	return &productsSourceDataProvider{}
 }
 
-func (s *productsSourceDataProvider) Provide(ctx context.Context) ([]*model.Product, error) {
-	return []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23, nil)}, nil
+func (s *productsSourceDataProvider) Provide(ctx context.Context) <-chan *model.Product {
+	stream := make(chan *model.Product)
+	go func() {
+		for _, p := range []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23), model.NewPromotionalProduct(1, "xD2", "c2", "22", 23.23, 1.2)} {
+			stream <- p
+		}
+		close(stream)
+	}()
+	return stream
 }

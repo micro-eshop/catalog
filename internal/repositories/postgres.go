@@ -32,12 +32,18 @@ func (u postgresProduct) String() string {
 	return fmt.Sprintf("Product<%d, %s, %s, %s, %f, %f)>", u.ProductID, u.Name, u.Brand, u.Description, u.Price, u.PromotionPrice.Float64)
 }
 
-func newPostgresProduct(product *model.Product) *postgresProduct {
-	var promotionalPrice sql.NullFloat64
-	if product.PromotionPrice != nil {
-		promotionalPrice.Float64 = *product.PromotionPrice
+func newNullFloat64(s *float64) sql.NullFloat64 {
+	if s == nil {
+		return sql.NullFloat64{}
 	}
-	return &postgresProduct{ProductID: int(product.ID), Name: product.Name, Brand: product.Brand, Description: product.Description, Price: product.Price, PromotionPrice: promotionalPrice}
+	return sql.NullFloat64{
+		Float64: float64(*s),
+		Valid:   true,
+	}
+}
+
+func newPostgresProduct(product *model.Product) *postgresProduct {
+	return &postgresProduct{ProductID: int(product.ID), Name: product.Name, Brand: product.Brand, Description: product.Description, Price: product.Price, PromotionPrice: newNullFloat64(product.PromotionPrice)}
 }
 
 func (p postgresProduct) toProduct() *model.Product {

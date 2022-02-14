@@ -22,15 +22,10 @@ func NewImportProductsUseCase(service services.CatalogImportService, source serv
 }
 
 func (uc *importProductsUseCase) Execute(ctx context.Context) error {
-	data, err := uc.source.Provide(ctx)
-	if err != nil {
-		return err
-	}
-	err = uc.service.Store(ctx, data)
-	if err != nil {
-		return err
-	}
-	for _, product := range data {
+	data := uc.source.Provide(ctx)
+	stream := uc.service.Store(ctx, data)
+	var err error
+	for product := range stream {
 		publishErr := uc.publisher.Publish(ctx, services.NewProductCreated(product))
 		if publishErr != nil {
 			err = multierror.Append(err, publishErr)

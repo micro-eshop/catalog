@@ -15,8 +15,12 @@ type Product struct {
 
 type Products = []Product
 
-func NewProduct(id ProductId, name, brand, description string, price float64, promotionPrice *float64) *Product {
-	return &Product{ID: id, Name: name, Brand: brand, Description: description, Price: price, PromotionPrice: promotionPrice}
+func NewPromotionalProduct(id ProductId, name, brand, description string, price float64, promotionPrice float64) *Product {
+	return &Product{ID: id, Name: name, Brand: brand, Description: description, Price: price, PromotionPrice: &promotionPrice}
+}
+
+func NewProduct(id ProductId, name, brand, description string, price float64) *Product {
+	return &Product{ID: id, Name: name, Brand: brand, Description: description, Price: price, PromotionPrice: nil}
 }
 
 func ValidateProduct(product *Product) error {
