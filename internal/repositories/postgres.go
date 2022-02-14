@@ -28,6 +28,13 @@ type postgresProduct struct {
 	PromotionPrice sql.NullFloat64 `pg:"promotion_price"`
 }
 
+func (p postgresProduct) getPromotionPrice() *float64 {
+	if !p.PromotionPrice.Valid {
+		return nil
+	}
+	return &p.PromotionPrice.Float64
+}
+
 func (u postgresProduct) String() string {
 	return fmt.Sprintf("Product<%d, %s, %s, %s, %f, %f)>", u.ProductID, u.Name, u.Brand, u.Description, u.Price, u.PromotionPrice.Float64)
 }
@@ -47,11 +54,7 @@ func newPostgresProduct(product *model.Product) *postgresProduct {
 }
 
 func (p postgresProduct) toProduct() *model.Product {
-	var price *float64
-	if p.PromotionPrice.Valid {
-		price = &p.PromotionPrice.Float64
-	}
-	return &model.Product{ID: model.ProductId(p.ProductID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: price}
+	return &model.Product{ID: model.ProductId(p.ProductID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: p.getPromotionPrice()}
 }
 
 func mapProduct(scanner sq.RowScanner) (*postgresProduct, error) {
