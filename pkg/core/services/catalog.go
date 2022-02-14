@@ -107,7 +107,7 @@ func NewProductsSourceDataProvider() *productsSourceDataProvider {
 func (s *productsSourceDataProvider) Provide(ctx context.Context) <-chan *model.Product {
 	stream := make(chan *model.Product)
 	go func() {
-		for _, p := range []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23), model.NewPromotionalProduct(1, "xD2", "c2", "22", 23.23, 1.2)} {
+		for _, p := range []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23), model.NewPromotionalProduct(2, "xD2", "c2", "22", 23.23, 1.2)} {
 			stream <- p
 		}
 		close(stream)

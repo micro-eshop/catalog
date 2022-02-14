@@ -172,8 +172,8 @@ func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.P
 	dbProduct := newPostgresProduct(product)
 	log.Println("Inserting product: ", dbProduct)
 	query := psql.Insert("products").
-		Columns("brand", "name", "description", "price", "promotion_price").
-		Values(dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice).
+		Columns("id", "brand", "name", "description", "price", "promotion_price").
+		Values(dbProduct.ProductID, dbProduct.Brand, dbProduct.Name, dbProduct.Description, dbProduct.Price, dbProduct.PromotionPrice).
 		RunWith(r.client.db)
 
 	_, err := query.Exec()
