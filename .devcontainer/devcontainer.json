@@ -19,7 +19,8 @@
 		"golang.Go",
 		"GitHub.copilot",
 		"wakatime.vscode-wakatime",
-		"ckolkman.vscode-postgres"
+		"ckolkman.vscode-postgres",
+		"humao.rest-client"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

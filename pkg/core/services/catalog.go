@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"math/rand"
 	"sync"
 
+	"github.com/bxcodec/faker/v3"
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
 	log "github.com/sirupsen/logrus"
@@ -104,11 +106,21 @@ func NewProductsSourceDataProvider() *productsSourceDataProvider {
 	return &productsSourceDataProvider{}
 }
 
+func randomPrice(min, max float64) float64 {
+	return min + rand.Float64()*(max-min)
+}
+
 func (s *productsSourceDataProvider) Provide(ctx context.Context) <-chan *model.Product {
 	stream := make(chan *model.Product)
+
 	go func() {
-		for _, p := range []*model.Product{model.NewProduct(1, "xD", "c", "dsa", 23.23), model.NewPromotionalProduct(2, "xD2", "c2", "22", 23.23, 1.2)} {
-			stream <- p
+		for i := 0; i < 100; i++ {
+			if i%2 == 0 {
+				var f float64 = randomPrice(float64(i), 200)
+				stream <- model.NewPromotionalProduct(model.ProductId(i+1), faker.Name(), faker.Word(), faker.Sentence(), randomPrice(200, 400), f)
+			} else {
+				stream <- model.NewProduct(model.ProductId(i+1), faker.Name(), faker.Word(), faker.Sentence(), randomPrice(200, 400))
+			}
 		}
 		close(stream)
 	}()
