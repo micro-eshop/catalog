@@ -5,6 +5,7 @@ import (
 	"flag"
 
 	"github.com/google/subcommands"
+	"github.com/micro-eshop/catalog/internal/data"
 	"github.com/micro-eshop/catalog/internal/env"
 	"github.com/micro-eshop/catalog/internal/messaging"
 	"github.com/micro-eshop/catalog/internal/repositories"
@@ -15,6 +16,7 @@ import (
 
 type ImportProductsCmd struct {
 	postgresConn string
+	csvpath      string
 }
 
 func (*ImportProductsCmd) Name() string     { return "run-import" }
@@ -25,6 +27,7 @@ func (*ImportProductsCmd) Usage() string {
 
 func (p *ImportProductsCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.postgresConn, "postgresConn", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable", "postgresConn connection string")
+	f.StringVar(&p.csvpath, "csvpath", "./seed/products.csv", "csv path")
 }
 
 func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
@@ -45,7 +48,7 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 	repo := repositories.NewPostgresCatalogRepository(postgresClient)
 	service := services.NewCatalogImportService(repo)
 
-	importUc := usecase.NewImportProductsUseCase(service, services.NewProductsSourceDataProvider(), publisher)
+	importUc := usecase.NewImportProductsUseCase(service, data.NewProductsSourceDataProvider(p.csvpath), publisher)
 
 	err = importUc.Execute(ctx)
 	if err != nil {

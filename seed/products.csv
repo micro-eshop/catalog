@@ -1,15 +1,15 @@
-ProductId, CatalogTypeName,Brand,Description,Name,Price,PictureFileName,availablestock,onreorder
-1,T-Shirt,.NET,".NET Bot Black Hoodie, and more",.NET Bot Black Hoodie,19.5,1.png,100,false
-2,Mug,.NET,.NET Black & White Mug,.NET Black & White Mug,8.50,2.png,89,true
-3,T-Shirt,Other,Prism White T-Shirt,Prism White T-Shirt,12,3.png,56,false
-4,T-Shirt,.NET,.NET Foundation T-shirt,.NET Foundation T-shirt,12,4.png,120,false
-5,Pin,Other,Roslyn Red Pin,Roslyn Red Pin,8.5,5.png,55,false
-6,T-Shirt,.NET,.NET Blue Hoodie,.NET Blue Hoodie,12,6.png,17,false
-7,T-Shirt,Other,Roslyn Red T-Shirt,Roslyn Red T-Shirt,12,7.png,8,false
-8,T-Shirt,Other,Kudu Purple Hoodie,Kudu Purple Hoodie,8.5,8.png,34,false
-9,Mug,Other,Cup<T> White Mug,Cup<T> White Mug,12,9.png,76,false
-10,Pin,.NET,.NET Foundation Pin,.NET Foundation Pin,12,10.png,11,false
-11,Pin,.NET,Cup<T> Pin,Cup<T> Pin,8.5,11.png,3,false
-12,T-Shirt,Other,Prism White TShirt,Prism White TShirt,12,12.png,0,false
-13,Mug,.NET,Modern .NET Black & White Mug,Modern .NET Black & White Mug,8.50,13.png,89,true
-14,Mug,Other,Modern Cup<T> White Mug,Modern Cup<T> White Mug,12,14.png,76,false
+ProductId,CatalogTypeName,Brand,Description,Name,Price
+1,T-Shirt,.NET,".NET Bot Black Hoodie, and more",.NET Bot Black Hoodie,19.5
+2,Mug,.NET,.NET Black & White Mug,.NET Black & White Mug,8.50
+3,T-Shirt,Other,Prism White T-Shirt,Prism White T-Shirt,12
+4,T-Shirt,.NET,.NET Foundation T-shirt,.NET Foundation T-shirt,12
+5,Pin,Other,Roslyn Red Pin,Roslyn Red Pin,8.5
+6,T-Shirt,.NET,.NET Blue Hoodie,.NET Blue Hoodie,12
+7,T-Shirt,Other,Roslyn Red T-Shirt,Roslyn Red T-Shirt,12
+8,T-Shirt,Other,Kudu Purple Hoodie,Kudu Purple Hoodie,8.5
+9,Mug,Other,Cup<T> White Mug,Cup<T> White Mug,12
+10,Pin,.NET,.NET Foundation Pin,.NET Foundation Pin,12
+11,Pin,.NET,Cup<T> Pin,Cup<T> Pin,8.5
+12,T-Shirt,Other,Prism White TShirt,Prism White TShirt,12
+13,Mug,.NET,Modern .NET Black & White Mug,Modern .NET Black & White Mug,8.50
+14,Mug,Other,Modern Cup<T> White Mug,Modern Cup<T> White Mug,12

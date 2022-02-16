@@ -2,10 +2,8 @@ package services
 
 import (
 	"context"
-	"math/rand"
 	"sync"
 
-	"github.com/bxcodec/faker/v3"
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
 	log "github.com/sirupsen/logrus"
@@ -97,32 +95,4 @@ func (s *catalogImportService) Store(ctx context.Context, products <-chan *model
 
 type ProductsSourceDataProvider interface {
 	Provide(ctx context.Context) <-chan *model.Product
-}
-
-type productsSourceDataProvider struct {
-}
-
-func NewProductsSourceDataProvider() *productsSourceDataProvider {
-	return &productsSourceDataProvider{}
-}
-
-func randomPrice(min, max float64) float64 {
-	return min + rand.Float64()*(max-min)
-}
-
-func (s *productsSourceDataProvider) Provide(ctx context.Context) <-chan *model.Product {
-	stream := make(chan *model.Product)
-
-	go func() {
-		for i := 0; i < 100; i++ {
-			if i%2 == 0 {
-				var f float64 = randomPrice(float64(i), 200)
-				stream <- model.NewPromotionalProduct(model.ProductId(i+1), faker.Name(), faker.Word(), faker.Sentence(), randomPrice(200, 400), f)
-			} else {
-				stream <- model.NewProduct(model.ProductId(i+1), faker.Name(), faker.Word(), faker.Sentence(), randomPrice(200, 400))
-			}
-		}
-		close(stream)
-	}()
-	return stream
 }
