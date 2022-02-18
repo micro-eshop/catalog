@@ -7,10 +7,11 @@ import (
 )
 
 type ProductSearchParams struct {
-	Name      string
-	Brand     string
-	PriceFrom float64
-	PriceTo   float64
+	Name        string
+	Brand       string
+	PriceFrom   float64
+	PriceTo     float64
+	InPromotion bool
 }
 
 type CatalogReader interface {

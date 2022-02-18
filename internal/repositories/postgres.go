@@ -165,7 +165,42 @@ func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []m
 }
 
 func (r *postgresCatalogRepository) Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
-	return nil, nil
+	query := psql.Select("id", "brand", "name", "description", "price", "promotion_price").From("products")
+	if params.Name != "" {
+		query = query.Where(sq.Like{"name": "%" + params.Name + "%"})
+	}
+	if params.Brand != "" {
+		query = query.Where(sq.Like{"brand": "%" + params.Brand + "%"})
+	}
+	if params.PriceFrom != 0 {
+		query = query.Where(sq.Gt{"price": params.PriceFrom})
+	}
+	if params.PriceTo != 0 {
+		query = query.Where(sq.Lt{"price": params.PriceTo})
+	}
+	if params.InPromotion {
+		query = query.Where(sq.NotEq{"promotion_price": nil})
+	}
+	rows, err := query.RunWith(r.client.db).QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	products := make([]*model.Product, 0)
+	for rows.Next() {
+		product, nerr := mapProduct(rows)
+		if nerr != nil {
+			err = multierror.Append(nerr)
+		}
+		products = append(products, product.toProduct())
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	if len(products) == 0 {
+		return nil, nil
+	}
+	return products, nil
 }
 
 func (r *postgresCatalogRepository) Insert(ctx context.Context, product *model.Product) error {
