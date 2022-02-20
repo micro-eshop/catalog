@@ -7,7 +7,16 @@ import (
 
 	"github.com/google/subcommands"
 	"github.com/micro-eshop/catalog/cmd"
+	log "github.com/sirupsen/logrus"
 )
+
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.InfoLevel)
+}
 
 func main() {
 	subcommands.Register(subcommands.HelpCommand(), "")

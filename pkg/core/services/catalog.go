@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"sync"
 
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
@@ -59,38 +58,48 @@ func NewCatalogImportService(repo repositories.CatalogRepository) *catalogImport
 	}
 }
 
-func (s *catalogImportService) store(ctx context.Context, product *model.Product) error {
-	err := model.ValidateProduct(product)
-	if err != nil {
-		return err
-	}
-	err = s.repo.Insert(ctx, product)
-	if err != nil {
-		return err
-	}
-	return nil
+func filter(ctx context.Context, products <-chan *model.Product, predicate func(ctx context.Context, product *model.Product) bool) <-chan *model.Product {
+	filteredProducts := make(chan *model.Product, 100)
+	go func() {
+		for product := range products {
+			if predicate(ctx, product) {
+				filteredProducts <- product
+			}
+		}
+		close(filteredProducts)
+	}()
+	return filteredProducts
+}
+
+func pipe(ctx context.Context, products <-chan *model.Product, f func(ctx context.Context, product *model.Product, stream chan<- *model.Product)) <-chan *model.Product {
+	out := make(chan *model.Product, 10)
+	go func() {
+		for product := range products {
+			f(ctx, product, out)
+		}
+		close(out)
+	}()
+	return out
 }
 
 func (s *catalogImportService) Store(ctx context.Context, products <-chan *model.Product) <-chan *model.Product {
-	stream := make(chan *model.Product)
-	go func() {
-		var wg sync.WaitGroup
-		for product := range products {
-			wg.Add(1)
-			go func(p *model.Product) {
-				defer wg.Done()
-				err := s.store(ctx, p)
-				if err != nil {
-					log.Errorf("error while storing product: %s", err)
-				} else {
-					stream <- p
-				}
-			}(product)
+	validProducts := filter(ctx, products, func(ctx context.Context, product *model.Product) bool {
+		err := model.ValidateProduct(product)
+		if err != nil {
+			log.WithError(err).WithField("ProductId", product.ID).Errorln("Product is not valid")
+			return false
 		}
-		wg.Wait()
-		close(stream)
-	}()
-	return stream
+		return true
+	})
+
+	return pipe(ctx, validProducts, func(ctx context.Context, product *model.Product, out chan<- *model.Product) {
+		err := s.repo.Insert(ctx, product)
+		if err != nil {
+			log.Errorf("Error storing product: %v", err)
+		} else {
+			out <- product
+		}
+	})
 }
 
 type ProductsSourceDataProvider interface {
