@@ -7,8 +7,8 @@ import (
 	"github.com/google/subcommands"
 	"github.com/micro-eshop/catalog/internal/data"
 	"github.com/micro-eshop/catalog/internal/env"
-	"github.com/micro-eshop/catalog/internal/messaging"
-	"github.com/micro-eshop/catalog/internal/repositories"
+	"github.com/micro-eshop/catalog/internal/nats"
+	"github.com/micro-eshop/catalog/internal/postgres"
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
 	log "github.com/sirupsen/logrus"
@@ -32,20 +32,20 @@ func (p *ImportProductsCmd) SetFlags(f *flag.FlagSet) {
 
 func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	log.Infoln("Start import products")
-	postgresClient, err := repositories.NewPostgresClient(ctx, p.postgresConn)
+	postgresClient, err := postgres.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {
 		log.WithError(err).Error("can't create postgres  client")
 		return subcommands.ExitFailure
 	}
 	defer postgresClient.Close(ctx)
-	publisher, err := messaging.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
+	publisher, err := nats.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
 	if err != nil {
 		log.WithError(err).Error("can't create publisher")
 		return subcommands.ExitFailure
 	}
 	defer publisher.Close()
 
-	repo := repositories.NewPostgresCatalogRepository(postgresClient)
+	repo := postgres.NewPostgresCatalogRepository(postgresClient)
 	service := services.NewCatalogImportService(repo)
 
 	importUc := usecase.NewImportProductsUseCase(service, data.NewProductsSourceDataProvider(p.csvpath), publisher)
