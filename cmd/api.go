@@ -13,11 +13,17 @@ import (
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
 	"github.com/micro-eshop/catalog/pkg/handlers"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type RunApiCmd struct {
 	addr         string
 	postgresConn string
+	v            *viper.Viper
+}
+
+func NewRunApiCmd(v *viper.Viper) *RunApiCmd {
+	return &RunApiCmd{v: v}
 }
 
 func (*RunApiCmd) Name() string     { return "run-api" }
@@ -28,7 +34,7 @@ func (*RunApiCmd) Usage() string {
 
 func (p *RunApiCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.addr, "addr", ":8080", "address to listen")
-	f.StringVar(&p.postgresConn, "postgresConn", "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable", "postgresConn connection string")
+	f.StringVar(&p.postgresConn, "postgresConn", p.v.GetString("POSTGRES_CONNECTION"), "postgresConn connection string")
 }
 
 func (p *RunApiCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
