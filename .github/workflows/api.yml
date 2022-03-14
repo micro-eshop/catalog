@@ -1,9 +1,9 @@
 name: Build Api Image
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
