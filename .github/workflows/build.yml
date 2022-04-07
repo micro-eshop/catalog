@@ -3,7 +3,7 @@ name: Build Catalog
 on:
   push:
     branches:    
-      - master
+      - main
       - 'release/**'
     tags:        
       - v1
