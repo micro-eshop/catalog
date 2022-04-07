@@ -1,9 +1,10 @@
 name: Build Api Image
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Build Catalog"]
+    branches: [main]
+    types: 
+      - completed
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
