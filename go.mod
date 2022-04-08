@@ -8,7 +8,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/google/subcommands v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/lib/pq v1.10.4
+	github.com/lib/pq v1.10.5
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.10.1
