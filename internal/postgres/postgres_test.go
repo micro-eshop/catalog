@@ -2,13 +2,11 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
+	"github.com/dominikus1993/integrationtestcontainers-go"
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/stretchr/testify/assert"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func TestNewNullFloat64WhenNil(t *testing.T) {
@@ -41,46 +39,12 @@ func TestGetPromotionPriceWhenNotNil(t *testing.T) {
 	assert.NotNil(t, subject)
 	assert.Equal(t, price, *subject)
 }
-
-type postgresContainer struct {
-	testcontainers.Container
-	ConnectionString string
-}
-
-func setupPostgreSql(ctx context.Context) (*postgresContainer, error) {
-	const port = "5432"
-	req := testcontainers.ContainerRequest{
-		Image:        "postgres:14-bullseye",
-		ExposedPorts: []string{"5432/tcp"},
-		Env:          map[string]string{"POSTGRES_USER": "postgres", "POSTGRES_PASSWORD": "postgres", "POSTGRES_DB": "postgres"},
-		WaitingFor:   wait.NewExecStrategy([]string{"pg_isready", "--host", "localhost", "--port", port}),
-	}
-	mongoC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	host, err := mongoC.Host(ctx)
-	if err != nil {
-		return nil, err
-	}
-	cport, err := mongoC.MappedPort(ctx, port)
-	if err != nil {
-		return nil, err
-	}
-	connectionString := fmt.Sprintf("postgres://postgres:postgres@%s:%s/postgres?sslmode=disable", host, cport.Port())
-	return &postgresContainer{mongoC, connectionString}, nil
-}
-
 func TestGetProductById(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
 	ctx := context.Background()
-	postgres, err := setupPostgreSql(ctx)
+	postgres, err := integrationtestcontainers.StartPostgreSqlContainer(ctx, integrationtestcontainers.DefaultPostgresContainerConfiguration)
 	if err != nil {
 		t.Fatal(err)
 	}
