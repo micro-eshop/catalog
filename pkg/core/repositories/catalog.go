@@ -16,7 +16,7 @@ type ProductSearchParams struct {
 
 type CatalogReader interface {
 	GetProductById(ctx context.Context, id model.ProductId) (*model.Product, error)
-	GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error)
+	GetProductByIds(ctx context.Context, ids ...model.ProductId) ([]*model.Product, error)
 	Search(ctx context.Context, params ProductSearchParams) ([]*model.Product, error)
 }
 

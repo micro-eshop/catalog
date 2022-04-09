@@ -33,11 +33,15 @@ func (s *catalogService) GetProductById(ctx context.Context, id model.ProductId)
 }
 
 func (s *catalogService) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
+	if len(ids) == 0 {
+		return make([]*model.Product, 0), nil
+	}
+
 	err := model.ValidateProductIds(ids)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.GetProductByIds(ctx, ids)
+	return s.repo.GetProductByIds(ctx, ids...)
 }
 
 func (s *catalogService) Search(ctx context.Context, params repositories.ProductSearchParams) ([]*model.Product, error) {
