@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/micro-eshop/catalog/pkg/core/model"
@@ -13,7 +14,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/golang-migrate/migrate/v4/source/github"
 	_ "github.com/lib/pq"
 )
 
@@ -84,28 +85,33 @@ func createSchema(db *sql.DB) error {
 		return err
 	}
 	m, err := migrate.NewWithDatabaseInstance(
-		"file://migrations",
+		"github://micro-eshop/catalog/migrations#main",
 		"postgresql", driver)
 	if err != nil {
 		return err
 	}
 	err = m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-	if err != nil && err.Error() == "no change" {
-		return nil
+	if err != nil && err != migrate.ErrNoChange {
+		return err
 	}
-	return err
+	return nil
 }
 
 func NewPostgresClient(ctx context.Context, connectionString string) (*postgresClient, error) {
 	db, err := sql.Open("postgres", connectionString)
+	db.SetConnMaxLifetime(time.Minute * 5)
+	db.SetMaxIdleConns(0)
 	if err != nil {
+		fmt.Println("Error opening database: ", err)
 		return nil, err
 	}
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
+	// if err := db.PingContext(ctx); err != nil {
+	// 	fmt.Println("Error pinging database: ", err)
+	// 	return nil, err
+	// }
 	err = createSchema(db)
 	if err != nil {
+		fmt.Println("Error creating schema: ", err)
 		return nil, err
 	}
 	return &postgresClient{db: db}, nil

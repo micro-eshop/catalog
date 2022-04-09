@@ -12,6 +12,7 @@
 		"go.useLanguageServer": true,
 		"go.gopath": "/go",
 		"go.goroot": "/usr/local/go",
+		"go.testTimeout": "90s"
 	},
 
 	// Add the IDs of extensions you want installed when the container is created.
