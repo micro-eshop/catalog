@@ -146,7 +146,7 @@ func (r *postgresCatalogRepository) GetProductById(ctx context.Context, id model
 	return product.toProduct(), nil
 }
 
-func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids []model.ProductId) ([]*model.Product, error) {
+func (r *postgresCatalogRepository) GetProductByIds(ctx context.Context, ids ...model.ProductId) ([]*model.Product, error) {
 	query := psql.Select("id", "brand", "name", "description", "price", "promotion_price").From("products").Where(sq.Eq{"id": mapIds(ids)})
 	rows, err := query.RunWith(r.client.db).QueryContext(ctx)
 	if err != nil {
