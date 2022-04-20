@@ -15,10 +15,10 @@ type ProductCreated struct {
 	PromotionPrice *float64 `json:"promotion_price,omitempty"`
 }
 
-func NewProductCreated(p *model.Product) *ProductCreated {
-	return &ProductCreated{ID: int(p.ID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: p.PromotionPrice}
+func NewProductCreated(p *model.Product) ProductCreated {
+	return ProductCreated{ID: int(p.ID), Name: p.Name, Brand: p.Brand, Description: p.Description, Price: p.Price, PromotionPrice: p.PromotionPrice}
 }
 
 type ProductCreatedPublisher interface {
-	Publish(ctx context.Context, event *ProductCreated) error
+	Publish(ctx context.Context, event ProductCreated) error
 }

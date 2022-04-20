@@ -6,8 +6,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/subcommands"
-	"github.com/micro-eshop/catalog/internal/env"
-	"github.com/micro-eshop/catalog/internal/nats"
 	"github.com/micro-eshop/catalog/internal/postgres"
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
@@ -42,17 +40,10 @@ func (p *RunApiCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface
 	log.Infoln("Start import products")
 	postgresClient, err := postgres.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {
-		log.WithError(err).Error("can't create postgres  client")
+		log.WithError(err).Error("can't create postgres client")
 		return subcommands.ExitFailure
 	}
 	defer postgresClient.Close(ctx)
-	publisher, err := nats.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
-	if err != nil {
-		log.WithError(err).Error("can't create publisher")
-		return subcommands.ExitFailure
-	}
-	defer publisher.Close()
-
 	repo := postgres.NewPostgresCatalogRepository(postgresClient)
 	service := services.NewCatalogService(repo)
 

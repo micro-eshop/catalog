@@ -2,35 +2,23 @@ package nats
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/micro-eshop/catalog/pkg/core/services"
-	"github.com/nats-io/nats.go"
+	microeshop "github.com/micro-eshop/common-go"
 )
 
 const topic = "PRODUCTS.created"
 
-type natsClient struct {
-	Connection *nats.Conn
+type productsCreatedPublisher struct {
+	messagePublisher microeshop.MessagePublisher[services.ProductCreated]
 }
 
-func NewPublisher(url string) (*natsClient, error) {
-	nc, err := nats.Connect(url)
-	if err != nil {
-		return nil, err
-	}
-	return &natsClient{Connection: nc}, nil
+func NewPublisher(client *microeshop.NatsClient) (*productsCreatedPublisher, error) {
+	publisher := microeshop.NewMessagePublisher[services.ProductCreated](client)
+	return &productsCreatedPublisher{messagePublisher: publisher}, nil
 }
 
-func (c natsClient) Close() {
-	c.Connection.Drain()
-	c.Connection.Close()
-}
-
-func (c natsClient) Publish(ctx context.Context, event *services.ProductCreated) error {
-	json, err := json.Marshal(event)
-	if err != nil {
-		return err
-	}
-	return c.Connection.Publish(topic, json)
+func (c productsCreatedPublisher) Publish(ctx context.Context, event services.ProductCreated) error {
+	headers := make(map[string]string)
+	return c.messagePublisher.Publish(ctx, microeshop.NatsMessage[services.ProductCreated]{Data: event, MetaData: microeshop.NatsMessageMetaData{Topic: topic, Headers: headers}})
 }

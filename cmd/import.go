@@ -11,6 +11,7 @@ import (
 	"github.com/micro-eshop/catalog/internal/postgres"
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
+	microeshop "github.com/micro-eshop/common-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,12 +39,16 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 		return subcommands.ExitFailure
 	}
 	defer postgresClient.Close(ctx)
-	publisher, err := nats.NewPublisher(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
+	natsClient, err := microeshop.NewNatsClient(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
+	if err != nil {
+		log.WithError(err).Error("can't create nats client")
+	}
+	defer natsClient.Close()
+	publisher, err := nats.NewPublisher(natsClient)
 	if err != nil {
 		log.WithError(err).Error("can't create publisher")
 		return subcommands.ExitFailure
 	}
-	defer publisher.Close()
 
 	repo := postgres.NewPostgresCatalogRepository(postgresClient)
 	service := services.NewCatalogImportService(repo)
