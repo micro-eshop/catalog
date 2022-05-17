@@ -9,7 +9,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/subcommands v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/lib/pq v1.10.5
+	github.com/lib/pq v1.10.6
 	github.com/micro-eshop/common-go v0.0.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.11.0
