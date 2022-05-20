@@ -3,7 +3,7 @@ module github.com/micro-eshop/catalog
 go 1.18
 
 require (
-	github.com/Masterminds/squirrel v1.5.2
+	github.com/Masterminds/squirrel v1.5.3
 	github.com/dominikus1993/integrationtestcontainers-go v0.0.3
 	github.com/gin-gonic/gin v1.7.7
 	github.com/golang-migrate/migrate/v4 v4.15.2
