@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/dominikus1993/integrationtestcontainers-go v0.0.3
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/subcommands v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
