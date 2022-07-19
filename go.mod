@@ -11,9 +11,14 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lib/pq v1.10.6
 	github.com/micro-eshop/common-go v0.0.5
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
+	go.opentelemetry.io/contrib/propagators/b3 v1.8.0
+	go.opentelemetry.io/otel v1.8.0
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0
+	go.opentelemetry.io/otel/sdk v1.8.0
+	google.golang.org/grpc v1.48.0
 )
 
 require (
@@ -77,12 +82,8 @@ require (
 	github.com/testcontainers/testcontainers-go v0.13.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	go.opencensus.io v0.23.0 // indirect
-	go.opentelemetry.io/contrib/propagators/b3 v1.8.0 // indirect
-	go.opentelemetry.io/otel v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0 // indirect
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.8.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.8.0 // indirect
 	go.opentelemetry.io/otel/trace v1.8.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.18.0 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
@@ -93,7 +94,6 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220715211116-798f69b842b9 // indirect
-	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
