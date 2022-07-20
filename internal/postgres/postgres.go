@@ -10,12 +10,14 @@ import (
 	"github.com/micro-eshop/catalog/pkg/core/model"
 	"github.com/micro-eshop/catalog/pkg/core/repositories"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 	_ "github.com/lib/pq"
+	"github.com/uptrace/opentelemetry-go-extra/otelsql"
 )
 
 var psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
@@ -98,7 +100,7 @@ func createSchema(db *sql.DB) error {
 }
 
 func NewPostgresClient(ctx context.Context, connectionString string) (*postgresClient, error) {
-	db, err := sql.Open("postgres", connectionString)
+	db, err := otelsql.Open("postgres", connectionString, otelsql.WithTracerProvider(otel.GetTracerProvider()))
 	db.SetConnMaxLifetime(time.Minute * 5)
 	db.SetMaxIdleConns(0)
 	if err != nil {

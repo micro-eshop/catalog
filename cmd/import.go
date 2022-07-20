@@ -11,8 +11,10 @@ import (
 	"github.com/micro-eshop/catalog/internal/postgres"
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
+	"github.com/micro-eshop/catalog/pkg/handlers"
 	microeshop "github.com/micro-eshop/common-go"
 	log "github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
 )
 
 type ImportProductsCmd struct {
@@ -33,6 +35,8 @@ func (p *ImportProductsCmd) SetFlags(f *flag.FlagSet) {
 
 func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	log.Infoln("Start import products")
+	shutdown := handlers.InitPrivder(ctx)
+	defer shutdown()
 	postgresClient, err := postgres.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {
 		log.WithError(err).Error("can't create postgres  client")
@@ -44,7 +48,7 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 		log.WithError(err).Error("can't create nats client")
 	}
 	defer natsClient.Close()
-	publisher, err := nats.NewPublisher(natsClient)
+	publisher, err := nats.NewPublisher(natsClient, otel.GetTracerProvider())
 	if err != nil {
 		log.WithError(err).Error("can't create publisher")
 		return subcommands.ExitFailure
