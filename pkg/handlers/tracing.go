@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-func initPrivder(ctx context.Context) func() {
+func InitPrivder(ctx context.Context) func() {
 	log.Infoln("Initializing OpenTelemetry")
 	exp, err := newShoppingListStorageExporter(ctx)
 	if err != nil {

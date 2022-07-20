@@ -80,8 +80,12 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
 	github.com/testcontainers/testcontainers-go v0.13.0 // indirect
+	github.com/toorop/gin-logrus v0.0.0-20210225092905-2c785434f26f // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otellogrus v0.1.14 // indirect
+	github.com/uptrace/opentelemetry-go-extra/otelutil v0.1.14 // indirect
 	go.opencensus.io v0.23.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.33.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.8.0 // indirect
 	go.opentelemetry.io/otel/trace v1.8.0 // indirect
