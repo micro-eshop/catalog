@@ -37,6 +37,7 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 	log.Infoln("Start import products")
 	shutdown := handlers.InitPrivder(ctx)
 	defer shutdown()
+	log.Infoln("Start import products")
 	postgresClient, err := postgres.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {
 		log.WithError(err).Error("can't create postgres  client")
