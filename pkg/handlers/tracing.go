@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"time"
 
 	"github.com/micro-eshop/catalog/pkg/core/common"
 	log "github.com/sirupsen/logrus"
@@ -43,25 +44,18 @@ func handleErr(err error, message string) {
 }
 
 func newResource() *resource.Resource {
-	r, err := resource.Merge(
-		resource.Default(),
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("catalog"),
-			semconv.ServiceVersionKey.String("v0.1.0"),
-			attribute.String("environment", "demo"),
-		),
+	r := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String("catalog"),
+		semconv.ServiceVersionKey.String("v0.1.0"),
+		attribute.String("environment", "demo"),
 	)
-	if err != nil {
-		log.WithError(err).Fatalln("failed to create resource")
-	}
-	log.WithField("sn", r.String()).Info("resource")
 	return r
 }
 
 func newShoppingListStorageExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 	return otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(common.GetEnvOrDefault("OTEL_TRACER_ENDPOINT", "otel-collector:4317")),
-		otlptracegrpc.WithDialOption(grpc.WithBlock()),
+		otlptracegrpc.WithDialOption(grpc.WithBackoffMaxDelay(time.Second*10)),
 	)
 }
