@@ -36,7 +36,7 @@ func (p *ImportProductsCmd) SetFlags(f *flag.FlagSet) {
 func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	log.Infoln("Start import products")
 	shutdown := handlers.InitPrivder(ctx)
-	defer shutdown()
+	defer shutdown(ctx)
 	log.Infoln("Start import products")
 	postgresClient, err := postgres.NewPostgresClient(ctx, p.postgresConn)
 	if err != nil {

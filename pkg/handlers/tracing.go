@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"time"
 
 	"github.com/micro-eshop/catalog/pkg/core/common"
 	log "github.com/sirupsen/logrus"
@@ -14,10 +13,9 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
-	"google.golang.org/grpc"
 )
 
-func InitPrivder(ctx context.Context) func() {
+func InitPrivder(ctx context.Context) func(ctx context.Context) {
 	log.Infoln("Initializing OpenTelemetry")
 	exp, err := newShoppingListStorageExporter(ctx)
 	if err != nil {
@@ -30,8 +28,8 @@ func InitPrivder(ctx context.Context) func() {
 	otel.SetTracerProvider(tp)
 	b3p := b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader | b3.B3SingleHeader))
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}, b3p))
-	return func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
+	return func(ctx context.Context) {
+		if err := tp.Shutdown(ctx); err != nil {
 			log.WithError(err).Fatal("failed to shutdown tracing")
 		}
 	}
@@ -56,6 +54,5 @@ func newResource() *resource.Resource {
 func newShoppingListStorageExporter(ctx context.Context) (sdktrace.SpanExporter, error) {
 	return otlptracegrpc.New(ctx, otlptracegrpc.WithInsecure(),
 		otlptracegrpc.WithEndpoint(common.GetEnvOrDefault("OTEL_TRACER_ENDPOINT", "otel-collector:4317")),
-		otlptracegrpc.WithDialOption(grpc.WithBackoffMaxDelay(time.Second*10)),
 	)
 }

@@ -63,7 +63,7 @@ func initLogger() *logrus.Logger {
 
 func (p *RunApiCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...interface{}) subcommands.ExitStatus {
 	shutdown := handlers.InitPrivder(ctx)
-	defer shutdown()
+	defer shutdown(ctx)
 
 	r := gin.New()
 	log := initLogger()
