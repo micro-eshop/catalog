@@ -1,4 +1,4 @@
-package nats
+package rabbitmq
 
 import (
 	"context"
