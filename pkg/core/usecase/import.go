@@ -26,7 +26,7 @@ func (uc *importProductsUseCase) Execute(ctx context.Context) error {
 	stream := uc.service.Store(ctx, data)
 	var err error
 	for product := range stream {
-		publishErr := uc.publisher.Publish(ctx, services.NewProductCreated(product))
+		publishErr := uc.publisher.PublishProductCreated(ctx, services.NewProductCreated(product))
 		if publishErr != nil {
 			err = multierror.Append(err, publishErr)
 		}

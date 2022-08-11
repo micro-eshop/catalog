@@ -3,13 +3,17 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
+	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
+
+const productsImportStream = "product-imported"
 
 type RabbitMqStreamClient struct {
 	env      *stream.Environment
@@ -23,30 +27,52 @@ func NewRabbitMqStreamClient(uri string) (*RabbitMqStreamClient, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create stream environment: %w", err)
 	}
-	producer, err := env.NewProducer("catalog.importer", stream.NewProducerOptions())
+	err = env.DeclareStream(productsImportStream,
+		stream.NewStreamOptions().
+			SetMaxLengthBytes(stream.ByteCapacity{}.GB(2)).SetMaxAge(time.Hour*24))
+	if err != nil {
+		return nil, fmt.Errorf("failed to declare stream: %w", err)
+	}
+
+	producer, err := env.NewProducer(productsImportStream, stream.NewProducerOptions())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create producer: %s", err)
 	}
 	return &RabbitMqStreamClient{env: env, producer: producer}, nil
 }
 
-func (c *RabbitMqStreamClient) Publish(ctx context.Context, data interface{}) error {
-	amqp.NewMessage()
+func (c *RabbitMqStreamClient) Close() {
+	if err := c.producer.Close(); err != nil {
+		log.WithError(err).Fatalf("failed to close producer")
+	}
+	if err := c.env.Close(); err != nil {
+		log.WithError(err).Fatalf("failed to close environment")
+	}
+}
+
+func (c *RabbitMqStreamClient) Publish(ctx context.Context, msg *amqp.AMQP10) error {
+	span := c.startRabbitMqSpan(ctx, c.producer.GetName(), msg)
+	defer span.End()
+	err := c.producer.Send(msg)
+	if err != nil {
+		span.RecordError(err)
+		return fmt.Errorf("failed to send message: %w", err)
+	}
+	return nil
 }
 
 // xD
 
-func (publisher RabbitMqStreamClient) startRabbitMqSpan(ctx context.Context, exchange, topic string, msg *amqp.AMQP10) trace.Span {
+func (publisher RabbitMqStreamClient) startRabbitMqSpan(ctx context.Context, queue string, msg *amqp.AMQP10) trace.Span {
 	carrier := newRabbitMqCarrier(msg)
 	propagator := otel.GetTextMapPropagator()
 	ctx = propagator.Extract(ctx, carrier)
 	tracerPrivider := otel.GetTracerProvider()
 	ctx, span := tracerPrivider.Tracer("rabbitmq").Start(ctx, "publish")
 	span.SetAttributes(
-		attribute.KeyValue{Key: "messaging.rabbitmq.routing_key", Value: attribute.StringValue(topic)},
-		attribute.KeyValue{Key: "messaging.destination", Value: attribute.StringValue(exchange)},
+		attribute.KeyValue{Key: "messaging.destination", Value: attribute.StringValue(queue)},
 		attribute.KeyValue{Key: "messaging.system", Value: attribute.StringValue("rabbitmq")},
-		attribute.KeyValue{Key: "messaging.destination_kind", Value: attribute.StringValue("topic")},
+		attribute.KeyValue{Key: "messaging.destination_kind", Value: attribute.StringValue("stream")},
 		attribute.KeyValue{Key: "messaging.protocol", Value: attribute.StringValue("AMQP")},
 		attribute.KeyValue{Key: "messaging.protocol_version", Value: attribute.StringValue("1.0.0")},
 	)
@@ -64,7 +90,6 @@ func newRabbitMqCarrier(msg *amqp.AMQP10) rabbitMqCarrier {
 }
 
 func setHeaderIfEmpty(msg *amqp.AMQP10) {
-
 	if msg.Annotations == nil {
 		msg.Annotations = make(map[interface{}]interface{})
 	}
@@ -81,9 +106,7 @@ func (c rabbitMqCarrier) Get(key string) string {
 // Set sets a header.
 func (c rabbitMqCarrier) Set(key, val string) {
 
-	if _, ok := c.msg.Annotations[key]; ok {
-		delete(c.msg.Annotations, key)
-	}
+	delete(c.msg.Annotations, key)
 	c.msg.Annotations[key] = val
 }
 

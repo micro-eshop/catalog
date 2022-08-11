@@ -3,22 +3,18 @@ package rabbitmq
 import (
 	"context"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/micro-eshop/catalog/pkg/core/services"
-	microeshop "github.com/micro-eshop/common-go"
-	"go.opentelemetry.io/otel/trace"
+	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 )
 
-const topic = "PRODUCTS.created"
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-type productsCreatedPublisher struct {
-	messagePublisher microeshop.MessagePublisher[services.ProductCreated]
-}
-
-func NewPublisher(client *microeshop.NatsClient, tracerProvider trace.TracerProvider) (*productsCreatedPublisher, error) {
-	publisher := microeshop.NewMessagePublisher[services.ProductCreated](client, tracerProvider)
-	return &productsCreatedPublisher{messagePublisher: publisher}, nil
-}
-
-func (c productsCreatedPublisher) Publish(ctx context.Context, event services.ProductCreated) error {
-	return c.messagePublisher.Publish(ctx, microeshop.NatsMessage[services.ProductCreated]{Data: event, MetaData: microeshop.NatsMessageMetaData{Topic: topic}})
+func (client *RabbitMqStreamClient) PublishProductCreated(ctx context.Context, event services.ProductCreated) error {
+	json, err := json.Marshal(event)
+	if err != nil {
+		return err
+	}
+	msg := amqp.NewMessage(json)
+	return client.Publish(ctx, msg)
 }

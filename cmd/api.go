@@ -11,7 +11,6 @@ import (
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
 	"github.com/micro-eshop/catalog/pkg/handlers"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	ginlogrus "github.com/toorop/gin-logrus"
@@ -41,7 +40,7 @@ func (p *RunApiCmd) SetFlags(f *flag.FlagSet) {
 	f.StringVar(&p.postgresConn, "postgresConn", p.v.GetString("POSTGRES_CONNECTION"), "postgresConn connection string")
 }
 
-func initLogger() *logrus.Logger {
+func initLogger() *log.Logger {
 	logger := log.New()
 	// Log as JSON instead of the default ASCII formatter.
 	logger.SetFormatter(&log.JSONFormatter{})
@@ -53,10 +52,10 @@ func initLogger() *logrus.Logger {
 	// Only log the warning severity or above.
 	logger.SetLevel(log.InfoLevel)
 	logger.AddHook(otellogrus.NewHook(otellogrus.WithLevels(
-		logrus.PanicLevel,
-		logrus.FatalLevel,
-		logrus.ErrorLevel,
-		logrus.WarnLevel,
+		log.PanicLevel,
+		log.FatalLevel,
+		log.ErrorLevel,
+		log.WarnLevel,
 	)))
 	return logger
 }
