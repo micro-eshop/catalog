@@ -13,7 +13,7 @@ services:
         # [Choice] Go version 1, 1.16, 1.17
         # Append -bullseye or -buster to pin to an OS version.
         # Use -bullseye variants on local arm64/Apple Silicon.
-        VARIANT: 1.18-bullseye
+        VARIANT: 1.19-bullseye
         # Options
         NODE_VERSION: "16"
     env_file:
@@ -51,9 +51,15 @@ services:
       - .env
     # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
     # (Adding the "ports" property to this file will not forward from a Codespace.)
-  nats:
-    image: 'nats:latest'
+  rabbitmq:
+    image: rabbitmq:3.10-management-alpine
+    restart: unless-stopped
     ports:
-      - 4222:4222
-      - 6222:6222
-      - 8222:8222
+      - 5672:5672
+      - 15672:15672
+      - 5552:5552
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

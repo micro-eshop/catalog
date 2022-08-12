@@ -20,5 +20,5 @@ func NewProductCreated(p *model.Product) ProductCreated {
 }
 
 type ProductCreatedPublisher interface {
-	Publish(ctx context.Context, event ProductCreated) error
+	PublishProductCreated(ctx context.Context, event ProductCreated) error
 }

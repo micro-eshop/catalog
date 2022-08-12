@@ -7,14 +7,12 @@ import (
 	"github.com/google/subcommands"
 	"github.com/micro-eshop/catalog/internal/data"
 	"github.com/micro-eshop/catalog/internal/env"
-	"github.com/micro-eshop/catalog/internal/nats"
 	"github.com/micro-eshop/catalog/internal/postgres"
+	"github.com/micro-eshop/catalog/internal/rabbitmq"
 	"github.com/micro-eshop/catalog/pkg/core/services"
 	"github.com/micro-eshop/catalog/pkg/core/usecase"
 	"github.com/micro-eshop/catalog/pkg/handlers"
-	microeshop "github.com/micro-eshop/common-go"
 	log "github.com/sirupsen/logrus"
-	"go.opentelemetry.io/otel"
 )
 
 type ImportProductsCmd struct {
@@ -44,12 +42,12 @@ func (p *ImportProductsCmd) Execute(ctx context.Context, f *flag.FlagSet, _ ...i
 		return subcommands.ExitFailure
 	}
 	defer postgresClient.Close(ctx)
-	natsClient, err := microeshop.NewNatsClient(env.GetEnvOrDefault("NATS_URL", "nats://nats:4222"))
+	publisher, err := rabbitmq.NewRabbitMqStreamClient(env.GetEnvOrDefault("RABBITMQ_URL", "rabbitmq-stream://guest:guest@rabbitmq:5552/%2f"))
 	if err != nil {
-		log.WithError(err).Error("can't create nats client")
+		log.WithError(err).Error("can't create rabbitmq publisher")
+		return subcommands.ExitFailure
 	}
-	defer natsClient.Close()
-	publisher, err := nats.NewPublisher(natsClient, otel.GetTracerProvider())
+	defer publisher.Close()
 	if err != nil {
 		log.WithError(err).Error("can't create publisher")
 		return subcommands.ExitFailure
