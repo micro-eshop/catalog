@@ -10,7 +10,7 @@ require (
 	github.com/google/subcommands v1.2.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/json-iterator/go v1.1.12
-	github.com/lib/pq v1.10.6
+	github.com/lib/pq v1.10.7
 	github.com/rabbitmq/rabbitmq-stream-go-client v1.0.1-rc.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.12.0
